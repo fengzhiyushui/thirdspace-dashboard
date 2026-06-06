@@ -53,7 +53,7 @@ const WORKSPACES = [
 ];
 
 const JOBS = [
-  ["radar-update", "每 30 分钟", "已验证", "good", PATHS.radar],
+  ["radar-update", "每日 22:00", "已验证", "good", PATHS.radar],
   ["night-review", "23:30", "待验证", "wait", PATHS.hermesHome],
   ["daily-compile", "06:00", "待验证", "wait", PATHS.todayBrief],
   ["git-backup", "23:50", "已配置", "good", PATHS.systemHome]
@@ -327,7 +327,7 @@ class ThirdspaceDashboardView extends ItemView {
   renderHotspotTimeline(parent, data) {
     const card = this.card(parent, "今日热点时间流", "自动读取今日雷达，只展示最值得关注的热点。", PATHS.radar, "hot-timeline");
     if (!data.hotspotTimeline.length) {
-      this.empty(card.body, "今日热点还没有可展示内容。等 radar-update 写入后会自动刷新。");
+      this.empty(card.body, "今日热点还没有可展示内容。等 22:00 radar-update 写入后会自动刷新。");
       return;
     }
     const timeline = card.body.createDiv({ cls: "tsd-timeline" });
@@ -351,7 +351,7 @@ class ThirdspaceDashboardView extends ItemView {
   }
 
   renderRadar(parent, data) {
-    const card = this.card(parent, "实时热点", "Hermes 每 30 分钟收集、提炼、写回 Obsidian。", PATHS.radar, "radar");
+    const card = this.card(parent, "实时热点", "Hermes 每天 22:00 收集、提炼、写回 Obsidian。", PATHS.radar, "radar");
     if (!data.radarItems.length) {
       this.empty(card.body, "暂无可展示热点，打开原文可查看完整雷达输出。");
     } else {
