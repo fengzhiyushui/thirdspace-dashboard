@@ -1,4 +1,4 @@
-const { ItemView, Notice, Plugin, PluginSettingTab, Setting, TFile, setIcon } = require("obsidian");
+const { ItemView, Notice, Plugin, PluginSettingTab, Setting, TFile, TFolder, setIcon } = require("obsidian");
 
 const VIEW_TYPE = "thirdspace-dashboard-view";
 
@@ -533,11 +533,56 @@ class ThirdspaceDashboardView extends ItemView {
     if (!path) return;
     const target = this.app.vault.getAbstractFileByPath(path);
     if (target instanceof TFile) {
-      const leaf = this.app.workspace.getLeaf("tab");
-      await leaf.openFile(target);
+      await this.openFile(target);
       return;
     }
-    await this.app.workspace.openLinkText(path, "", false);
+    if (target instanceof TFolder) {
+      if (this.revealInFileExplorer(target)) {
+        new Notice(`已在文件列表中定位：${path}`);
+        return;
+      }
+      const prefix = path.endsWith("/") ? path : `${path}/`;
+      const latest = this.app.vault.getMarkdownFiles()
+        .filter((file) => file.path.startsWith(prefix))
+        .sort((a, b) => b.stat.mtime - a.stat.mtime)[0];
+      if (latest) {
+        await this.openFile(latest);
+        new Notice(`已打开 ${path} 中最新的笔记`);
+      } else {
+        new Notice(`${path} 目录下暂无 Markdown 文件`);
+      }
+      return;
+    }
+    const linked = this.app.metadataCache.getFirstLinkpathDest(path, "");
+    if (linked instanceof TFile) {
+      await this.openFile(linked);
+      return;
+    }
+    new Notice(`未找到：${path}`);
+  }
+
+  async openFile(file) {
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(file);
+  }
+
+  revealInFileExplorer(target) {
+    const leaves = this.app.workspace.getLeavesOfType("file-explorer");
+    for (const leaf of leaves) {
+      const view = leaf.view;
+      if (view && typeof view.revealInFolder === "function") {
+        view.revealInFolder(target);
+        this.app.workspace.revealLeaf(leaf);
+        return true;
+      }
+    }
+    const explorer = this.app.internalPlugins && this.app.internalPlugins.plugins && this.app.internalPlugins.plugins["file-explorer"];
+    const instance = explorer && explorer.instance;
+    if (instance && typeof instance.revealInFolder === "function") {
+      instance.revealInFolder(target);
+      return true;
+    }
+    return false;
   }
 
   async read(path) {
