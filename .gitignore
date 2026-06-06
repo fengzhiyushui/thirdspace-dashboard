@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+node_modules/
+dist/
+*.log
+.env
+.env.*
+*.local
+data.json
+.obsidian/
+.vscode/
+.idea/
+coverage/
+.project-memory/

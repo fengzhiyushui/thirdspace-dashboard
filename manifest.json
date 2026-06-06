@@ -1,0 +1,10 @@
+{
+    "id":  "thirdspace-dashboard",
+    "name":  "Thirdspace Dashboard",
+    "version":  "0.3.3",
+    "minAppVersion":  "1.5.0",
+    "description":  "A native dashboard view for the Obsidian + Hermes + VPS Thirdspace system.",
+    "author":  "fengzhiyushui",
+    "authorUrl":  "https://github.com/fengzhiyushui",
+    "isDesktopOnly":  false
+}
