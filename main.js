@@ -31,17 +31,25 @@ const PATHS = {
 };
 
 const WORKSPACES = [
-  ["00-Capture", "捕获", "随手输入", "inbox", "blue"],
-  ["01-Sources", "来源", "外部素材", "book-open", "cyan"],
-  ["02-Clips", "剪藏", "雷达剪辑", "copy", "violet"],
-  ["10-Daily", "每日", "简报复盘", "calendar-days", "green"],
-  ["20-Projects", "项目", "状态文档", "folder-kanban", "orange"],
-  ["40-Wiki", "Wiki", "知识编译", "database", "teal"],
-  ["60-Tasks", "任务", "行动队列", "list-checks", "red"],
-  ["70-Radar", "雷达", "热点信息", "radio", "yellow"],
-  ["80-Prompts", "请求", "Hermes 入口", "message-square", "purple"],
-  ["90-Agent", "Agent", "日志输出", "bot", "slate"],
-  ["95-System", "系统", "规则部署", "settings", "gray"]
+  ["00-Capture", "捕获", "临时收件箱，放随手记录、闪念、未整理输入。", "inbox", "blue"],
+  ["00-Home", "主页", "主控入口，放系统状态、项目总览、Hermes 总览和工作台。", "home", "slate"],
+  ["01-Sources", "来源", "原始资料库，放网页、文章、聊天记录、会议记录和外部素材。", "book-open", "cyan"],
+  ["02-Clips", "剪藏", "信息剪辑区，放热点雷达剪藏、网页摘要和可二次整理片段。", "copy", "violet"],
+  ["10-Daily", "每日", "每日笔记区，放今日简报、日记、当天计划和复盘。", "calendar-days", "green"],
+  ["11-Weekly", "每周", "周度复盘区，放周报、周计划和一周项目回顾。", "calendar-range", "green"],
+  ["12-Monthly", "每月", "月度总结区，放月计划、月报和长期趋势回顾。", "calendar", "green"],
+  ["20-Projects", "项目", "项目主档案，放项目简介、状态、架构、文件地图和运行手册。", "folder-kanban", "orange"],
+  ["21-Active", "进行中", "当前推进区，放正在执行、需要持续关注的项目或行动。", "play-circle", "orange"],
+  ["22-On-Hold", "暂停", "等待区，放暂时搁置、缺少条件或等待他人反馈的事项。", "pause-circle", "yellow"],
+  ["23-Done", "完成", "归档区，放已完成项目、阶段成果和可复用经验。", "check-circle-2", "teal"],
+  ["30-Areas", "领域", "长期责任区，放学习、工作、健康、财务等持续经营主题。", "layers", "purple"],
+  ["40-Wiki", "Wiki", "知识库区，放 Hermes 编译出的主题页、索引页和可链接知识。", "database", "teal"],
+  ["50-Zettels", "卡片", "原子笔记区，放知识卡片、长期记忆和可复用观点。", "sticky-note", "cyan"],
+  ["60-Tasks", "任务", "行动管理区，放 open tasks、next actions、waiting 和任务队列。", "list-checks", "red"],
+  ["70-Radar", "雷达", "热点雷达区，放今日热点、信息源、趋势观察和外部动态。", "radio", "yellow"],
+  ["80-Prompts", "请求", "Agent 入口区，放你写给 Hermes 的待处理需求和指令。", "message-square", "purple"],
+  ["90-Agent", "Agent", "后台输出区，放 Hermes 日志、项目上传包、处理结果和草稿。", "bot", "slate"],
+  ["95-System", "系统", "系统规则区，放 Vault 结构、语言策略、部署文档和运行规范。", "settings", "gray"]
 ];
 
 const JOBS = [
@@ -241,6 +249,7 @@ class ThirdspaceDashboardView extends ItemView {
     this.renderHermes(right, data);
 
     this.renderWorkspace(shell, data);
+    this.renderDirectoryGuide(shell, data);
     this.bindActions(root);
     this.bindPointerEffects(root);
   }
@@ -395,7 +404,7 @@ class ThirdspaceDashboardView extends ItemView {
   }
 
   renderWorkspace(parent, data) {
-    const card = this.card(parent, "Vault 区域", "每行最多三个，避免区域卡片挤满整屏。", PATHS.vaultSchema, "workspace full");
+    const card = this.card(parent, "Vault 区域", "点击卡片定位目录；这里显示数量和最近更新。", PATHS.vaultSchema, "workspace full light");
     const grid = card.body.createDiv({ cls: "tsd-folder-grid" });
     data.folders.forEach((folder) => {
       const item = grid.createDiv({ cls: `tsd-folder-card ${folder.tone} ${folder.activity}` });
@@ -403,11 +412,29 @@ class ThirdspaceDashboardView extends ItemView {
       const head = item.createDiv({ cls: "tsd-folder-head" });
       this.renderIcon(head, folder.icon);
       head.createSpan({ text: folder.label });
+      item.createDiv({ cls: "tsd-folder-path", text: folder.path });
       item.createDiv({ cls: "tsd-folder-count", text: String(folder.count) });
-      item.createDiv({ cls: "tsd-folder-desc", text: folder.latest ? `${folder.desc} · ${formatRelative(folder.latest)}` : `${folder.desc} · 暂无内容` });
+
+      item.createDiv({ cls: "tsd-folder-meta", text: folder.latest ? `最新：${formatRelative(folder.latest)}` : "暂无 Markdown 内容" });
     });
   }
 
+  renderDirectoryGuide(parent, data) {
+    const card = this.card(parent, "目录说明", "这些目录分别存放什么内容。", PATHS.vaultSchema, "directory-guide full light");
+    const guide = card.body.createDiv({ cls: "tsd-directory-guide" });
+    data.folders.forEach((folder) => {
+      const row = guide.createDiv({ cls: `tsd-directory-row ${folder.tone}` });
+      row.dataset.path = folder.path;
+      const icon = row.createDiv({ cls: "tsd-directory-icon" });
+      this.renderIcon(icon, folder.icon);
+      const copy = row.createDiv({ cls: "tsd-directory-copy" });
+      const title = copy.createDiv({ cls: "tsd-directory-title" });
+      title.createSpan({ text: folder.label });
+      title.createEl("code", { text: folder.path });
+      copy.createDiv({ cls: "tsd-directory-desc", text: folder.desc });
+      row.createDiv({ cls: "tsd-directory-count", text: `${folder.count} 篇` });
+    });
+  }
   card(parent, title, subtitle, path, kind = "") {
     const card = parent.createDiv({ cls: `tsd-card tsd-glass tsd-spotlight ${kind}` });
     const head = card.createDiv({ cls: "tsd-card-head" });

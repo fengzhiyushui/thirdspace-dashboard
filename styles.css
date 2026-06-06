@@ -1454,3 +1454,338 @@
     grid-template-columns: 1fr;
   }
 }
+/* Directory purpose labels: make the Vault area explain what each folder stores. */
+.tsd-card.workspace .tsd-folder-grid {
+  width: min(100%, 1040px);
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+}
+
+.tsd-card.workspace .tsd-folder-card {
+  min-height: 136px;
+  padding: 12px 13px;
+}
+
+.tsd-folder-path {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 8px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tsd-border), transparent 22%);
+  color: var(--tsd-muted);
+  background: color-mix(in srgb, var(--tsd-card-strong), transparent 34%);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tsd-folder-purpose {
+  position: relative;
+  z-index: 1;
+  margin-top: 8px;
+  color: var(--tsd-text);
+  font-size: 12px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tsd-folder-meta {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  color: var(--tsd-muted);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.tsd-card.workspace .tsd-folder-count {
+  margin-top: 8px;
+  font-size: 24px;
+}
+
+.tsd-card.workspace .tsd-folder-desc {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .tsd-card.workspace .tsd-folder-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .tsd-card.workspace .tsd-folder-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Separate directory guide card. */
+.tsd-card.directory-guide {
+  margin-top: 14px;
+}
+
+.tsd-card.directory-guide .tsd-card-body {
+  padding-top: 12px;
+}
+
+.tsd-directory-guide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tsd-directory-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 74px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid color-mix(in srgb, var(--tsd-border), transparent 20%);
+  background: color-mix(in srgb, var(--tsd-card), transparent 24%);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.tsd-directory-row:hover {
+  border-color: color-mix(in srgb, var(--tsd-blue), transparent 68%);
+  background: color-mix(in srgb, var(--tsd-card), white 8%);
+  box-shadow: 0 10px 24px rgba(91, 66, 31, 0.08);
+}
+
+.tsd-directory-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  color: var(--tsd-blue);
+  background: color-mix(in srgb, var(--tsd-blue), transparent 88%);
+}
+
+.tsd-directory-copy {
+  min-width: 0;
+}
+
+.tsd-directory-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--tsd-text);
+}
+
+.tsd-directory-title code {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid color-mix(in srgb, var(--tsd-border), transparent 20%);
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: var(--tsd-muted);
+  background: color-mix(in srgb, var(--tsd-card-strong), transparent 34%);
+  font-size: 11px;
+}
+
+.tsd-directory-desc {
+  margin-top: 4px;
+  color: var(--tsd-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tsd-directory-count {
+  color: var(--tsd-text);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tsd-folder-purpose {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .tsd-directory-guide {
+    grid-template-columns: 1fr;
+  }
+}
+/* Dense responsive Vault grids + lighter bottom rendering. */
+.tsd-card.light {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.tsd-card.light::before,
+.tsd-card.light::after,
+.tsd-card.workspace .tsd-folder-card::after {
+  display: none;
+}
+
+.tsd-card.light.tsd-spotlight:hover {
+  box-shadow: 0 8px 20px rgba(91, 66, 31, 0.08);
+}
+
+.tsd-card.workspace .tsd-card-body,
+.tsd-card.directory-guide .tsd-card-body {
+  max-height: none;
+  overflow: visible;
+}
+
+.tsd-card.workspace .tsd-folder-grid {
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+  gap: 8px;
+}
+
+.tsd-card.workspace .tsd-folder-card {
+  min-height: 82px;
+  padding: 9px 10px;
+  border-radius: 12px;
+}
+
+.tsd-card.workspace .tsd-folder-head {
+  font-size: 11px;
+  gap: 6px;
+}
+
+.tsd-card.workspace .tsd-folder-head .tsd-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.tsd-card.workspace .tsd-folder-path {
+  margin-top: 6px;
+  max-width: 100%;
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.tsd-card.workspace .tsd-folder-count {
+  margin-top: 6px;
+  font-size: 20px;
+}
+
+.tsd-card.workspace .tsd-folder-meta {
+  margin-top: 3px;
+  font-size: 10px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tsd-card.directory-guide .tsd-directory-guide {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.tsd-card.directory-guide .tsd-directory-row {
+  min-height: 58px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.tsd-card.directory-guide .tsd-directory-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+}
+
+.tsd-card.directory-guide .tsd-directory-title {
+  font-size: 12px;
+  gap: 6px;
+}
+
+.tsd-card.directory-guide .tsd-directory-title code {
+  max-width: 120px;
+  font-size: 10px;
+  padding: 1px 6px;
+}
+
+.tsd-card.directory-guide .tsd-directory-desc {
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 1.3;
+  -webkit-line-clamp: 1;
+}
+
+.tsd-card.directory-guide .tsd-directory-count {
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .tsd-card.workspace .tsd-folder-grid {
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  }
+
+  .tsd-card.directory-guide .tsd-directory-guide {
+    grid-template-columns: 1fr;
+  }
+}
+/* Compact Vault section height fix: keep the full-width card from filling the viewport. */
+.tsd-shell {
+  height: auto;
+  min-height: 100%;
+}
+
+.tsd-card.workspace {
+  height: fit-content;
+  min-height: 0;
+  align-self: start;
+  contain: layout paint;
+}
+
+.tsd-card.workspace .tsd-card-head {
+  padding: 14px 16px 10px;
+}
+
+.tsd-card.workspace .tsd-card-body {
+  padding: 12px 16px 16px;
+  height: auto;
+  min-height: 0;
+}
+
+.tsd-card.workspace .tsd-folder-grid {
+  width: min(100%, 1560px);
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 7px;
+  align-items: start;
+}
+
+.tsd-card.workspace .tsd-folder-card {
+  min-height: 76px;
+  padding: 8px 9px;
+}
+
+.tsd-card.workspace .tsd-folder-count {
+  font-size: 19px;
+}
+
+.tsd-card.workspace .tsd-folder-meta {
+  font-size: 10px;
+}
+
+@media (min-width: 1600px) {
+  .tsd-card.workspace .tsd-folder-grid {
+    grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+  }
+}
