@@ -53,10 +53,43 @@ const WORKSPACES = [
 ];
 
 const JOBS = [
-  ["radar-update", "每日 22:00", "已验证", "good", PATHS.radar],
-  ["night-review", "23:30", "待验证", "wait", PATHS.hermesHome],
-  ["daily-compile", "06:00", "待验证", "wait", PATHS.todayBrief],
-  ["git-backup", "23:50", "已配置", "good", PATHS.systemHome]
+  {
+    id: "radar-update",
+    label: "radar-update",
+    schedule: "每日 22:00",
+    path: PATHS.radar,
+    logPatterns: ["radar"],
+    fallbackMtimeKey: "radar",
+    maxAgeHours: 36
+  },
+  {
+    id: "night-review",
+    label: "night-review",
+    schedule: "23:30",
+    path: PATHS.hermesHome,
+    logPatterns: ["night-review"],
+    maxAgeHours: 36
+  },
+  {
+    id: "daily-compile",
+    label: "daily-compile",
+    schedule: "06:00",
+    path: PATHS.todayBrief,
+    logPatterns: ["daily-compile"],
+    fallbackMtimeKey: "brief",
+    maxAgeHours: 36
+  },
+  {
+    id: "git-backup",
+    label: "git-backup",
+    schedule: "23:50",
+    path: PATHS.systemHome,
+    logPatterns: ["git-backup", "vault-git-backup", "vault_git_backup"],
+    maxAgeHours: 36,
+    missingState: "未接入日志",
+    missingTone: "info",
+    missingDetail: "需要把 VPS 备份日志写入或同步到 Vault"
+  }
 ];
 
 module.exports = class ThirdspaceDashboardPlugin extends Plugin {
@@ -191,6 +224,12 @@ class ThirdspaceDashboardView extends ItemView {
     const pendingUploads = uploads.filter((file) => this.frontmatter(file).status === "pending-hermes");
     const processedUploads = uploads.filter((file) => this.frontmatter(file).status === "processed");
     const folders = WORKSPACES.map(([path, label, desc, icon, tone]) => this.folderStat({ path, label, desc, icon, tone }, files));
+    const mtimes = {
+      radar: this.mtime(PATHS.radar),
+      brief: this.mtime(PATHS.todayBrief),
+      project: this.mtime(PATHS.projectStatus),
+      latestLog: logs[0] ? logs[0].stat.mtime : null
+    };
 
     return {
       generatedAt: new Date(),
@@ -208,12 +247,8 @@ class ThirdspaceDashboardView extends ItemView {
       activity: buildActivity(files),
       hotspotTimeline: buildHotspotTimeline(radarText, this.mtime(PATHS.radar)),
       folderChart: buildFolderChart(folders),
-      mtimes: {
-        radar: this.mtime(PATHS.radar),
-        brief: this.mtime(PATHS.todayBrief),
-        project: this.mtime(PATHS.projectStatus),
-        latestLog: logs[0] ? logs[0].stat.mtime : null
-      },
+      hermesJobs: buildHermesJobs(logs, mtimes),
+      mtimes,
       counts: {
         notes: files.length,
         tasks: openTasks.length,
@@ -385,13 +420,15 @@ class ThirdspaceDashboardView extends ItemView {
 
   renderHermes(parent, data) {
     const card = this.card(parent, "Hermes 中控", "自动化运行、日志和上传包状态。", PATHS.hermesHome, "hermes");
-    JOBS.forEach(([name, time, state, tone, path]) => {
-      const row = card.body.createDiv({ cls: "tsd-job-row" });
-      row.dataset.path = path;
+    data.hermesJobs.forEach((job) => {
+      const row = card.body.createDiv({ cls: `tsd-job-row ${job.tone}` });
+      row.dataset.path = job.path;
+      row.setAttr("title", job.detail);
       const copy = row.createDiv({ cls: "tsd-job-copy" });
-      copy.createDiv({ cls: "tsd-job-name", text: name });
-      copy.createDiv({ cls: "tsd-job-time", text: time });
-      row.createDiv({ cls: `tsd-pill ${tone}`, text: state });
+      copy.createDiv({ cls: "tsd-job-name", text: job.label });
+      copy.createDiv({ cls: "tsd-job-time", text: job.schedule });
+      copy.createDiv({ cls: "tsd-job-detail", text: job.detail });
+      row.createDiv({ cls: `tsd-pill ${job.tone}`, text: job.state });
     });
 
     const logs = card.body.createDiv({ cls: "tsd-log-list" });
@@ -651,6 +688,47 @@ class ThirdspaceDashboardView extends ItemView {
   }
 }
 
+function buildHermesJobs(logs, mtimes) {
+  return JOBS.map((job) => {
+    const latestLog = findLatestLog(logs, job.logPatterns);
+    const fallbackMs = job.fallbackMtimeKey ? mtimes[job.fallbackMtimeKey] : null;
+    const lastMs = latestLog ? latestLog.stat.mtime : fallbackMs;
+
+    if (!lastMs) {
+      return {
+        label: job.label,
+        schedule: job.schedule,
+        path: job.path,
+        state: job.missingState || "待验证",
+        tone: job.missingTone || "wait",
+        detail: job.missingDetail || "没有找到对应日志"
+      };
+    }
+
+    const ageHours = (Date.now() - lastMs) / (60 * 60 * 1000);
+    const maxAgeHours = job.maxAgeHours || 36;
+    const tone = ageHours <= maxAgeHours ? "good" : ageHours <= maxAgeHours * 2 ? "wait" : "danger";
+    const state = tone === "good" ? "已验证" : tone === "wait" ? "需复核" : "已过期";
+    const source = latestLog ? latestLog.basename : "输出文件";
+
+    return {
+      label: job.label,
+      schedule: job.schedule,
+      path: latestLog ? latestLog.path : job.path,
+      state,
+      tone,
+      detail: `${source} · ${formatRelative(lastMs)}`
+    };
+  });
+}
+
+function findLatestLog(logs, patterns) {
+  const normalized = (patterns || []).map((pattern) => pattern.toLowerCase());
+  return logs.find((file) => {
+    const name = `${file.basename} ${file.path}`.toLowerCase();
+    return normalized.some((pattern) => name.includes(pattern));
+  }) || null;
+}
 function extractTasks(text, done) {
   const pattern = done ? /^\s*- \[x\]\s+(.+)$/gim : /^\s*- \[ \]\s+(.+)$/gim;
   const out = [];
